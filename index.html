@@ -38,13 +38,15 @@
 
     html,body{height:100%;scroll-behavior:smooth;}
     body{
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-      /* Use page background image with a deep-blue overlay to match the new palette */
-      background: linear-gradient(180deg, rgba(0,59,153,0.6), rgba(0,59,153,0.12)), url('./assets/doctor.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background-color: #0A0A0A; /* Solid black background */
+  color: var(--text);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+  font-size: 16px;
+
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
       line-height:1.55;
@@ -79,7 +81,7 @@
     .card-top::before{content:"";position:absolute;left:1.25rem;top:-0.45rem;width:56px;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--brand-primary),var(--brand-secondary));box-shadow:0 6px 18px rgba(5,150,105,0.08)}
 
     /* Header refinements */
-    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));backdrop-filter:blur(6px)}
+    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(3, 3, 3, 0.95), rgba(8, 7, 7, 0.85));backdrop-filter:blur(6px); border-radius: 0 0 7px 7px;}
     .logo-badge{width:48px;height:48px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.6px}
 
     /* Buttons: smoother hover and focus styles */
@@ -97,8 +99,8 @@
     .section-title{display:inline-block;position:relative;padding-bottom:.45rem}
     .section-title::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:48px;border-radius:6px;background:linear-gradient(90deg,var(--brand-primary),var(--brand-secondary));opacity:0.95}
 
-    /* Muted card style for quick facts */
-    .muted-card{background:linear-gradient(180deg, rgba(5,150,105,0.06), rgba(16,185,129,0.03));border-radius:12px}
+    /* Muted card style for quick facts (dark variant) */
+    .muted-card{background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));border-radius:12px}
 
     /* Dark card variant (used to replace almost-white panels) */
     .card-dark{background:var(--brand-dark);color:var(--card-text);border:1px solid rgba(255,255,255,0.04)}
@@ -118,6 +120,14 @@
     .bg-accent-soft{background:rgba(16,185,129,0.06)}
     .text-primary-dark{color:var(--brand-secondary)}
 
+    /* Mobile menu link hover on dark panel */
+    .mobile-link{color:var(--text);display:block}
+    .mobile-link:hover{background:rgba(255,255,255,0.03)}
+
+    /* Dark form controls for readability on dark backgrounds */
+    input, textarea, select { background: rgba(255,255,255,0.02); color: var(--text); border:1px solid rgba(255,255,255,0.06) }
+    input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.45) }
+
     /* Accent helper */
     .accent-royal{color:var(--brand-primary);font-weight:700}
 
@@ -125,6 +135,7 @@
     @media (prefers-reduced-motion: reduce){
       .appear,.scale-in, a, button{transition:none !important}
     }
+    
   </style>
 </head>
 <body class="min-h-screen antialiased">
@@ -158,12 +169,12 @@
       </div>
 
       <!-- Mobile menu panel -->
-      <div id="mobile-menu" class="absolute right-6 top-full mt-2 w-56 bg-white rounded-lg shadow-lg p-3 z-50 hidden md:hidden">
+      <div id="mobile-menu" class="absolute right-6 top-full mt-2 w-56 rounded-lg shadow-lg p-3 z-50 hidden md:hidden" style="background:var(--card);">
         <nav class="flex flex-col gap-1">
-          <a href="#about" class="py-2 px-2 rounded hover:bg-gray-50">About</a>
-          <a href="#services" class="py-2 px-2 rounded hover:bg-gray-50">Services</a>
-          <a href="#booking" class="py-2 px-2 rounded hover:bg-gray-50">Book</a>
-          <a href="#contact" class="py-2 px-2 rounded hover:bg-gray-50">Contact</a>
+          <a href="#about" class="py-2 px-2 rounded mobile-link">About</a>
+          <a href="#services" class="py-2 px-2 rounded mobile-link">Services</a>
+          <a href="#booking" class="py-2 px-2 rounded mobile-link">Book</a>
+          <a href="#contact" class="py-2 px-2 rounded mobile-link">Contact</a>
           <a href="./assets/resume.pdf" class="mt-2 py-2 px-2 rounded text-center btn-primary text-white">Download CV (PDF)</a>
         </nav>
       </div>
