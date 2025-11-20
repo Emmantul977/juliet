@@ -53,6 +53,22 @@
       font-size:16px;
     }
 
+    /* Parallax background layer placed behind content. Uses CSS variable --parallax-y updated by JS. */
+    body::before{
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,59,153,0.55), rgba(0,59,153,0.12)), url('./assets/doctor.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transform: translate3d(0, calc(var(--parallax-y, 0px) * -1), 0) scale(1.02);
+      will-change: transform;
+      opacity: 0.9;
+    }
+
     /* Headings use a refined serif for elegance */
     h1,h2,h3{font-family: 'Playfair Display', Georgia, serif; color:var(--text)}
 
@@ -97,7 +113,8 @@
 
     /* Section heading underline */
     .section-title{display:inline-block;position:relative;padding-bottom:.45rem}
-    .section-title::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:48px;border-radius:6px;background:linear-gradient(90deg,var(--brand-primary),var(--brand-secondary));opacity:0.95}
+    .section-title::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:0;border-radius:6px;background:linear-gradient(90deg,var(--brand-primary),var(--brand-secondary));opacity:0.95;transition:width .5s cubic-bezier(.2,.9,.2,1)}
+    .section-title.show::after{width:48px}
 
     /* Muted card style for quick facts (dark variant) */
     .muted-card{background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));border-radius:12px}
@@ -127,6 +144,23 @@
     /* Dark form controls for readability on dark backgrounds */
     input, textarea, select { background: rgba(255,255,255,0.02); color: var(--text); border:1px solid rgba(255,255,255,0.06) }
     input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.45) }
+
+    /* Card hover motion */
+    .card-dark{transition:transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s cubic-bezier(.2,.9,.2,1)}
+    .card-dark:hover{transform:translateY(-6px);box-shadow:0 30px 60px rgba(0,0,0,0.55)}
+
+    /* Reveal on scroll helper */
+    .reveal-on-scroll{opacity:0;transform:translateY(10px);transition:opacity .6s ease, transform .6s ease}
+    .reveal-on-scroll.show{opacity:1;transform:none}
+
+    /* Mobile menu animation (initially closed) */
+    .mobile-menu{opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;transition:opacity .26s ease, transform .26s ease}
+    .mobile-menu.open{opacity:1;transform:none;pointer-events:auto}
+
+    /* Button ripple (basic) */
+    .ripple{position:relative;overflow:hidden}
+    .ripple .ripple-effect{position:absolute;border-radius:9999px;background:rgba(255,255,255,0.18);transform:scale(0);animation:ripple 600ms linear}
+    @keyframes ripple{to{transform:scale(4);opacity:0}}
 
     /* Accent helper */
     .accent-royal{color:var(--brand-primary);font-weight:700}
@@ -169,7 +203,7 @@
       </div>
 
       <!-- Mobile menu panel -->
-      <div id="mobile-menu" class="absolute right-6 top-full mt-2 w-56 rounded-lg shadow-lg p-3 z-50 hidden md:hidden" style="background:var(--card);">
+        <div id="mobile-menu" class="absolute right-6 top-full mt-2 w-56 rounded-lg shadow-lg p-3 z-50 md:hidden mobile-menu" aria-hidden="true">
         <nav class="flex flex-col gap-1">
           <a href="#about" class="py-2 px-2 rounded mobile-link">About</a>
           <a href="#services" class="py-2 px-2 rounded mobile-link">Services</a>
@@ -187,7 +221,7 @@
     <section class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center hero-sheen">
       <div id="hero-text" class="space-y-6 appear">
         <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">
-          Juliet C., <span class="accent-royal">RN, MSN</span>
+          Juliet C. , <span class="accent-royal">RN, MSN</span>
         </h1>
         <p class="text-lg">
           Clinical nurse consultant focusing on patient advocacy, chronic disease management, and telehealth care coordination.
@@ -203,13 +237,13 @@
             </svg>
           </a>
 
-          <a href="#contact" class="inline-flex items-center gap-2 btn-ghost px-4 py-2 rounded-lg">
+          <a href="#contact" class="inline-flex items-center gap-2 btn-ghost px-4 py-2 rounded-lg ">
             Contact
           </a>
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-sm muted mt-4">
-          <div>📍 Based in: Lagos, Nigeria</div>
+          <div>📍 Based in: Anambra, Nigeria</div>
           <div>🕒 Available for telehealth & in-person</div>
         </div>
       </div>
@@ -477,7 +511,28 @@
       });
     })();
 
-    // Responsive mobile nav + smooth-scroll handler
+    // Parallax background (updates CSS variable used by body::before)
+    (function(){
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const root = document.documentElement;
+      let lastY = window.scrollY || 0;
+      let ticking = false;
+      const maxOffset = 140; // maximum parallax shift in px
+
+      function onScroll(){ lastY = window.scrollY || 0; if(!ticking){ requestAnimationFrame(update); ticking = true; } }
+      function update(){
+        ticking = false;
+        // smaller factor for subtle effect
+        const y = Math.min(maxOffset, lastY * 0.12);
+        root.style.setProperty('--parallax-y', y + 'px');
+      }
+
+      window.addEventListener('scroll', onScroll, {passive:true});
+      // run once to initialize
+      update();
+    })();
+
+    // Responsive mobile nav, scroll reveal, profile tilt, and button ripple
     (function(){
       const header = document.querySelector('header');
       const navToggle = document.getElementById('nav-toggle');
@@ -492,27 +547,48 @@
         return 0;
       }
 
-      // Toggle mobile menu
-      if(navToggle && mobileMenu){
-        navToggle.addEventListener('click', function(e){
-          const expanded = this.getAttribute('aria-expanded') === 'true';
-          mobileMenu.classList.toggle('hidden');
-          this.setAttribute('aria-expanded', String(!expanded));
-        });
+      function openMobile(){
+        mobileMenu.classList.add('open');
+        mobileMenu.setAttribute('aria-hidden','false');
+        if(navToggle) navToggle.setAttribute('aria-expanded','true');
+      }
+      function closeMobile(){
+        mobileMenu.classList.remove('open');
+        mobileMenu.setAttribute('aria-hidden','true');
+        if(navToggle) navToggle.setAttribute('aria-expanded','false');
       }
 
-      // Close mobile menu helper
-      function closeMobileMenu(){
-        if(mobileMenu && !mobileMenu.classList.contains('hidden')){
-          mobileMenu.classList.add('hidden');
-        }
-        if(navToggle) navToggle.setAttribute('aria-expanded','false');
+      if(navToggle && mobileMenu){
+        navToggle.addEventListener('click', function(e){
+          if(mobileMenu.classList.contains('open')) closeMobile(); else openMobile();
+        });
+
+        // Close when clicking outside the menu
+        document.addEventListener('click', function(e){
+          if(!mobileMenu.contains(e.target) && !navToggle.contains(e.target)) closeMobile();
+        });
       }
 
       // Close on ESC
       document.addEventListener('keydown', function(e){
-        if(e.key === 'Escape') closeMobileMenu();
+        if(e.key === 'Escape') closeMobile();
       });
+
+      // Scroll reveal using IntersectionObserver
+      try{
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('show');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, {threshold: 0.12});
+
+        document.querySelectorAll('.reveal-on-scroll, .appear, .scale-in, .card-dark, .section-title').forEach(el => {
+          observer.observe(el);
+        });
+      }catch(e){}
 
       // Intercept internal anchor clicks for smooth scrolling and close mobile menu
       document.addEventListener('click', function(e){
@@ -529,9 +605,49 @@
         window.scrollTo({ top, behavior: 'smooth' });
         try{ target.setAttribute('tabindex','-1'); target.focus({preventScroll:true}); }catch(e){}
         history.replaceState(null, '', '#' + id);
-        // close mobile menu if open
-        closeMobileMenu();
+        closeMobile();
       }, false);
+
+      // Profile image tilt on pointer move (desktop only)
+      (function(){
+        const heroImage = document.getElementById('hero-image');
+        const photo = heroImage && heroImage.querySelector('.photo');
+        if(!heroImage || !photo) return;
+        if(window.matchMedia && !window.matchMedia('(hover: none)').matches){
+          heroImage.addEventListener('pointermove', function(ev){
+            const rect = heroImage.getBoundingClientRect();
+            const x = (ev.clientX - rect.left) / rect.width - 0.5;
+            const y = (ev.clientY - rect.top) / rect.height - 0.5;
+            const rx = -y * 6;
+            const ry = x * 6;
+            photo.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+            photo.style.transition = 'transform 120ms linear';
+          });
+          heroImage.addEventListener('pointerleave', function(){
+            photo.style.transform = 'none';
+            photo.style.transition = 'transform .4s ease';
+          });
+        }
+      })();
+
+      // Button ripple for .btn-primary
+      (function(){
+        document.querySelectorAll('.btn-primary').forEach(btn => {
+          btn.classList.add('ripple');
+          btn.addEventListener('pointerdown', function(e){
+            const rect = this.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple-effect';
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+            this.appendChild(ripple);
+            setTimeout(()=> ripple.remove(), 700);
+          });
+        });
+      })();
+
     })();
   </script>
 </body>
